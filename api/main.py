@@ -21,7 +21,7 @@ class handler(BaseHTTPRequestHandler):
                 parse_json: Dict[str, str]  = json.loads(json_data)
                 current_time = datetime.now()
 
-                delta = current_time - datetime.strptime(parse_json["timestamp"], "%Y-%m-%dT%H:%M:%S.%f")
+                delta = current_time - datetime.strptime(parse_json["timestamp"], "%Y-%m-%d %H:%M:%S.%f")
                 
                 if delta.days > 0:
                     json_data = get_wotd()
