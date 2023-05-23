@@ -1,6 +1,5 @@
 from http.server import BaseHTTPRequestHandler
 
-from get_wotd import get_wotd
 
 import json
 from typing import Dict
