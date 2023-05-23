@@ -23,8 +23,7 @@ class handler(BaseHTTPRequestHandler):
                 self.send_response(200)
                 self.send_header('Content-type','application/json')
                 self.end_headers()
-                self.send_response(code=200, message=json_data)
-                self.wfile.write('Hello, world!'.encode('utf-8'))
+                self.wfile.write(json_data.encode('utf-8'))
                 return
                 
             else:
