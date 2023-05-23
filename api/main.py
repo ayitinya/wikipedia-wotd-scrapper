@@ -1,31 +1,22 @@
 from http.server import BaseHTTPRequestHandler
 
-from bs4 import BeautifulSoup
-import requests
-import json
+from get_wotd import get_wotd
 
 
 class handler(BaseHTTPRequestHandler):
  
     def do_GET(self):
-        
         try:
-            URL: str = "https://en.wiktionary.org/wiki/Wiktionary:Word_of_the_day"
-            page = requests.get(URL)
-
-            soup = BeautifulSoup(page.content, "html.parser")
-
-            results = soup.find(id="WOTD-rss-title")
-
-            if results is not None:
-                json_data = json.dumps({"wotd": results.text})
-            
+            with open("wotd.json", "r") as f:
+                json_data = f.read()
+        except FileNotFoundError:
+            json_data = get_wotd()
+            if json_data is not None:
                 self.send_response(200)
                 self.send_header('Content-type','application/json')
                 self.end_headers()
                 self.wfile.write(json_data.encode('utf-8'))
                 return
-                
             else:
                 self.send_response(404)
                 return
