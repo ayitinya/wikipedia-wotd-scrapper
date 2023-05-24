@@ -19,7 +19,7 @@ def get_wotd():
 
     if results is not None:
         json_data = json.dumps(
-            {"wotd": results.text, "timestamp": str(datetime.now())})
+            {"wotd": results.text, "timestamp": datetime.now().isoformat()})
         return json_data
     else:
         return None
@@ -38,3 +38,7 @@ class handler(BaseHTTPRequestHandler):
         else:
             self.send_response(404)
             return
+
+
+if __name__ == "__main__":
+    print(get_wotd())
