@@ -10,16 +10,42 @@ import requests
 
 
 def get_wotd():
+    MONTHS = {
+        "January": "01",
+        "February": "02",
+        "March": "03",
+        "April": "04",
+        "May": "05",
+        "June": "06",
+        "July": "07",
+        "August": "08",
+        "September": "09",
+        "October": "10",
+        "November": "11",
+        "December": "12"
+    }
+
     URL: str = "https://en.wiktionary.org/wiki/Wiktionary:Word_of_the_day"
     page = requests.get(URL)
 
     soup = BeautifulSoup(page.content, "html.parser")
 
     results = soup.find(id="WOTD-rss-title")
+    date = soup.find(id="WOTD-rss-date")
 
-    if results is not None:
+    if results is not None and date is not None:
+        month = MONTHS[date.text.split(" ")[0]]
+        day = date.text.split(" ")[1].replace(",", "")
+
+        try:
+            month = int(month)
+            day = int(day)
+        except ValueError:
+            raise ValueError("Month or day is not an integer")
+
+        print(f"{month}-{day}")
         json_data = json.dumps(
-            {"wotd": results.text, "timestamp": datetime.now().isoformat()})
+            {"wotd": results.text, "timestamp": datetime(year=datetime.now().year, month=month, day=day).isoformat()})
         return json_data
     else:
         return None
