@@ -44,6 +44,10 @@ def get_wotd():
             raise ValueError("Month or day is not an integer")
 
         print(f"{month}-{day}")
+        
+        word_details = requests.get(f"https://api.dictionaryapi.dev/api/v2/entries/en/{results.text}")
+        if word_details.status_code == 200:
+            return json.dumps({"wotd": results.text, "timestamp": datetime(year=datetime.now().year, month=month, day=day).isoformat(), "details": word_details.json()[0]})
         json_data = json.dumps(
             {"wotd": results.text, "timestamp": datetime(year=datetime.now().year, month=month, day=day).isoformat()})
         return json_data
