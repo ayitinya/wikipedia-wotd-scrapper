@@ -1,4 +1,5 @@
-from http.server import BaseHTTPRequestHandler
+from http.server import HTTPServer, BaseHTTPRequestHandler
+from typing import Type
 
 
 import json
@@ -7,6 +8,13 @@ from datetime import datetime
 
 from bs4 import BeautifulSoup
 import requests
+
+
+def run(handler_class: Type[BaseHTTPRequestHandler], server_class: Type[HTTPServer] = HTTPServer):
+    server_address = ('', 8000)
+    httpd = server_class(server_address=server_address,
+                         RequestHandlerClass=handler_class)
+    httpd.serve_forever()
 
 
 def get_wotd():
@@ -25,34 +33,37 @@ def get_wotd():
         "December": "12"
     }
 
-    URL: str = "https://en.wiktionary.org/wiki/Wiktionary:Word_of_the_day"
+    URL: str = "https://en.wiktionary.org/w/api.php?action=featuredfeed&feed=wotd&feedformat=atom"
     page = requests.get(URL)
 
-    soup = BeautifulSoup(page.content, "html.parser")
+    soup = BeautifulSoup(page.content, "xml")
 
-    results = soup.find(id="WOTD-rss-title")
-    date = soup.find(id="WOTD-rss-date")
+    entries = soup.find_all("summary")
+    if len(entries) != 0:
+        entry = entries[-1]
 
-    if results is not None and date is not None:
-        month = MONTHS[date.text.split(" ")[0]]
-        day = date.text.split(" ")[1].replace(",", "")
+        parsed_entry = BeautifulSoup(entry.text, "html.parser")
+        print(parsed_entry)
 
-        try:
-            month = int(month)
-            day = int(day)
-        except ValueError:
-            raise ValueError("Month or day is not an integer")
+        results = parsed_entry.find(id="WOTD-rss-title")
+        date = parsed_entry.find(id="WOTD-rss-date")
 
-        print(f"{month}-{day}")
-        
-        word_details = requests.get(f"https://api.dictionaryapi.dev/api/v2/entries/en/{results.text}")
-        if word_details.status_code == 200:
-            return json.dumps({"wotd": results.text, "timestamp": datetime(year=datetime.now().year, month=month, day=day).isoformat(), "details": word_details.json()[0]})
-        json_data = json.dumps(
-            {"wotd": results.text, "timestamp": datetime(year=datetime.now().year, month=month, day=day).isoformat()})
-        return json_data
-    else:
-        return None
+        if results is not None and date is not None:
+            month = MONTHS[date.text.split(" ")[0]]
+            day = date.text.split(" ")[1].replace(",", "")
+
+            try:
+                month = int(month)
+                day = int(day)
+            except ValueError:
+                raise ValueError("Month or day is not an integer")
+
+            print(f"{month}-{day}")
+
+            json_data = json.dumps(
+                {"wotd": results.text, "timestamp": datetime(year=datetime.now().year, month=month, day=day).isoformat()})
+            return json_data
+    return None
 
 
 class handler(BaseHTTPRequestHandler):
@@ -71,4 +82,4 @@ class handler(BaseHTTPRequestHandler):
 
 
 if __name__ == "__main__":
-    print(get_wotd())
+    run(handler)
