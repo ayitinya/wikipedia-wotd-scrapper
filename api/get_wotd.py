@@ -43,7 +43,6 @@ def get_wotd():
         entry = entries[-1]
 
         parsed_entry = BeautifulSoup(entry.text, "html.parser")
-        print(parsed_entry)
 
         results = parsed_entry.find(id="WOTD-rss-title")
         date = parsed_entry.find(id="WOTD-rss-date")
@@ -57,8 +56,6 @@ def get_wotd():
                 day = int(day)
             except ValueError:
                 raise ValueError("Month or day is not an integer")
-
-            print(f"{month}-{day}")
 
             word_details = requests.get(
                 f"https://api.dictionaryapi.dev/api/v2/entries/en/{results.text}")
